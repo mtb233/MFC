@@ -7,6 +7,7 @@
 #SBATCH --ntasks-per-node=${tasks_per_node}
 #SBATCH --job-name="${name}"
 #SBATCH --output="${name}.out"
+#SBATCH --error="${name}.err"
 #SBATCH --time=${walltime}
 % if account:
 #SBATCH --account=${account}
