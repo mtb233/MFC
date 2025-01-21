@@ -130,7 +130,6 @@ contains
                         updatedvar%vf(2)%sf(cellaux(1), cellaux(2), cellaux(3)) = &
                             updatedvar%vf(2)%sf(cellaux(1), cellaux(2), cellaux(3)) &
                             + addFun2
-                        end if
                     end do
                 end do
             end do
@@ -154,12 +153,10 @@ contains
                 else
                     if (cyl_coord) then
                         ! TODO
-                        end do
                     else
                         ! 2D cartesian function:
                         ! We smear particles considering a virtual depth (lag_params%charwidth)
                         ! TODO
-                        end do
                     end if
                 end if
     end subroutine s_applyhornemahesh
