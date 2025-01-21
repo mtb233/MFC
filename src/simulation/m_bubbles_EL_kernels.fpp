@@ -104,7 +104,7 @@ contains
                             nodecoord(1) = x_cc(cellaux(1))
                             nodecoord(2) = y_cc(cellaux(2))
                             if (p > 0) nodecoord(3) = z_cc(cellaux(3))
-                            call s_applyhornemahesh(center, cellaux, nodecoord, stddsv, func)
+                            call s_applyhornemahesh(center, cellaux, nodecoord, stddsv, m, func)
 
                             ! Relocate cells for bubbles intersecting symmetric boundaries
                             if (bc_x%beg == -2 .or. bc_x%end == -2 .or. bc_y%beg == -2 .or. bc_y%end == -2 &
