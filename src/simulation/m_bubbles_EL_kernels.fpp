@@ -23,7 +23,6 @@ contains
             !! @param lbk_pos Spatial coordinates of the bubbles
             !! @param updatedvar Eulerian variable to be updated
     subroutine s_smoothfunction(nBubs, lbk_rad, lbk_vel, lbk_s, lbk_pos, updatedvar)
-
         integer, intent(in) :: nBubs
         real(wp), dimension(1:lag_params%nBubs_glb, 1:3, 1:2), intent(in) :: lbk_s, lbk_pos
         real(wp), dimension(1:lag_params%nBubs_glb, 1:2), intent(in) :: lbk_rad, lbk_vel
@@ -35,136 +34,13 @@ contains
         case (2)
             call s_gaussian(nBubs, lbk_rad, lbk_vel, lbk_s, lbk_pos, updatedvar)
         case (3)
-            call s_hornemahesh(nBubs, lbk_rad, lbk_vel, lbk_s, lbk_pos, 1._wp, updatedvar) ! TODO: Remove magic number here (m)
+            call s_hornemahesh(nBubs, lbk_rad, lbk_vel, lbk_s, lbk_pos, updatedvar)
         end select smoothfunc
-
     end subroutine s_smoothfunction
-
-    !> The purpose of this subroutine is...
-            !! @param nBubs Number of lagrangian bubbles in the current domain
-            !! @param lbk_rad Radius of the bubbles
-            !! @param lbk_vel Interface velocity of the bubbles
-            !! @param lbk_s Computational coordinates of the bubbles
-            !! @param lbk_pos Spatial coordinates of the bubbles
-            !! @param updatedvar Eulerian variable to be updated
-            !! @param m Constant parameter
-    subroutine s_hornemahesh(nBubs, lbk_rad, lbk_vel, lbk_s, lbk_pos, m, updatedvar)
-        integer, intent(in) :: nBubs
-        real(wp), dimension(1:lag_params%nBubs_glb, 1:3, 1:2), intent(in) :: lbk_s, lbk_pos
-        real(wp), dimension(1:lag_params%nBubs_glb, 1:2), intent(in) :: lbk_rad, lbk_vel
-        real(wp), intent(in) :: m
-        type(vector_field), intent(inout) :: updatedvar
-
-        real(wp), dimension(3) :: center ! Center of the bubble
-        integer, dimension(3) :: cell
-        real(wp) :: stddsv
-        real(wp) :: strength_vel, strength_vol
-
-        real(wp), dimension(3) :: nodecoord
-        real(wp) :: addFun1, addFun2
-        real(wp) :: func, volpart
-        integer, dimension(3) :: cellaux
-        real(wp), dimension(3) :: s_coord
-        integer :: l, i, j, k
-        logical :: celloutside
-        integer :: smearGrid, smearGridz
-
-        smearGrid = 2*mapCells + 1
-        smearGridz = smearGrid
-        if (p == 0) smearGridz = 1
-
-        do l = 1, nBubs
-            nodecoord(1:3) = 0
-            center(1:3) = 0._wp
-            volpart = 4._wp/3._wp*pi*lbk_rad(l, 2)**3._wp
-            s_coord(1:3) = lbk_s(l, 1:3, 2)
-            center(1:2) = lbk_pos(l, 1:2, 2)
-            if (p > 0) center(3) = lbk_pos(l, 3, 2)
-            call s_get_cell(s_coord, cell)
-
-            ! Calculate standard distribution
-            stddsv = lbk_rad(l, 2)*m*(4*pi/3)**(1/3)
-
-            strength_vol = volpart
-            strength_vel = 4._wp*pi*lbk_rad(l, 2)**2._wp*lbk_vel(l, 2)
-
-            do i = 1, smearGrid
-                do j = 1, smearGrid
-                    do k = 1, smearGridz
-                        cellaux(1) = cell(1) + i - (mapCells + 1)
-                        cellaux(2) = cell(2) + j - (mapCells + 1)
-                        cellaux(3) = cell(3) + k - (mapCells + 1)
-                        if (p == 0) cellaux(3) = 0
-
-                        ! Check if the cells intended to smear the bubbles in are in the computational domain and 
-                        ! redefine the cells for symmetric boundary
-                        call s_check_celloutside(cellaux, celloutside)
-
-                        if (.not. celloutside) then
-                            nodecoord(1) = x_cc(cellaux(1))
-                            nodecoord(2) = y_cc(cellaux(2))
-                            if (p > 0) nodecoord(3) = z_cc(cellaux(3))
-                            call s_applyhornemahesh(center, cellaux, nodecoord, stddsv, m, func)
-
-                            ! Relocate cells for bubbles intersecting symmetric boundaries
-                            if (bc_x%beg == -2 .or. bc_x%end == -2 .or. bc_y%beg == -2 .or. bc_y%end == -2 &
-                                .or. bc_z%beg == -2 .or. bc_z%end == -2) then
-                                call s_shift_cell_symmetric_bc(cellaux, cell)
-                            end if
-                        else
-                            func = 0._wp
-                            cellaux(1) = cell(1)
-                            cellaux(2) = cell(2)
-                            cellaux(3) = cell(3)
-                            if (p == 0) cellaux(3) = 0
-                        end if
-
-                        !Update void fraction field
-                        addFun1 = func*strength_vol
-                        updatedvar%vf(1)%sf(cellaux(1), cellaux(2), cellaux(3)) = &
-                            updatedvar%vf(1)%sf(cellaux(1), cellaux(2), cellaux(3)) &
-                            + addFun1
-
-                        !Update time derivative of void fraction
-                        addFun2 = func*strength_vel
-                        updatedvar%vf(2)%sf(cellaux(1), cellaux(2), cellaux(3)) = &
-                            updatedvar%vf(2)%sf(cellaux(1), cellaux(2), cellaux(3)) &
-                            + addFun2
-                    end do
-                end do
-            end do
-        end do
-    end subroutine s_hornemahesh
-
-    subroutine s_applyhornemahesh(center, cellaux, nodecoord, stddsv, m, func)
-                real(wp), dimension(3), intent(in) :: center
-                integer, dimension(3), intent(in) :: cellaux
-                real(wp), dimension(3), intent(in) :: nodecoord
-                real(wp), intent(in) :: stddsv, m
-                real(wp), intent(out) :: func
-        
-                real(wp) :: distance
-        
-                distance = sqrt((center(1) - nodecoord(1))**2._wp + (center(2) - nodecoord(2))**2._wp + (center(3) - nodecoord(3))**2._wp)
-        
-                if (num_dims == 3) then
-                    !< 3D gaussian function
-                    func = exp(((-distance)**2)/(2*stddsv**2))/((2*(pi**(3/2))*m**3)) 
-                else
-                    if (cyl_coord) then
-                        ! TODO
-                    else
-                        ! 2D cartesian function:
-                        ! We smear particles considering a virtual depth (lag_params%charwidth)
-                        ! TODO
-                    end if
-                end if
-    end subroutine s_applyhornemahesh
 
     !> The purpose of this procedure contains the algorithm to use the delta kernel function to map the effect of the bubbles.
             !!      The effect of the bubbles only affects the cell where the bubble is located.
     subroutine s_deltafunc(nBubs, lbk_rad, lbk_vel, lbk_s, updatedvar)
-
         integer, intent(in) :: nBubs
         real(wp), dimension(1:lag_params%nBubs_glb, 1:3, 1:2), intent(in) :: lbk_s
         real(wp), dimension(1:lag_params%nBubs_glb, 1:2), intent(in) :: lbk_rad, lbk_vel
@@ -213,7 +89,6 @@ contains
                 updatedvar%vf(5)%sf(cell(1), cell(2), cell(3)) = updatedvar%vf(5)%sf(cell(1), cell(2), cell(3)) + addFun3
             end if
         end do
-
     end subroutine s_deltafunc
 
     !> The purpose of this procedure contains the algorithm to use the gaussian kernel function to map the effect of the bubbles.
@@ -225,7 +100,6 @@ contains
             !! @param lbk_pos Spatial coordinates of the bubbles
             !! @param updatedvar Eulerian variable to be updated
     subroutine s_gaussian(nBubs, lbk_rad, lbk_vel, lbk_s, lbk_pos, updatedvar)
-
         integer, intent(in) :: nBubs
         real(wp), dimension(1:lag_params%nBubs_glb, 1:3, 1:2), intent(in) :: lbk_s, lbk_pos
         real(wp), dimension(1:lag_params%nBubs_glb, 1:2), intent(in) :: lbk_rad, lbk_vel
@@ -325,7 +199,6 @@ contains
                 end do
             end do
         end do
-
     end subroutine s_gaussian
 
     !> The purpose of this subroutine is to apply the gaussian kernel function for each bubble (Maeda and Colonius, 2018)).
@@ -395,6 +268,125 @@ contains
         end if
 
     end subroutine s_applygaussian
+
+        !> The purpose of this subroutine is...
+            !! @param nBubs Number of lagrangian bubbles in the current domain
+            !! @param lbk_rad Radius of the bubbles
+            !! @param lbk_vel Interface velocity of the bubbles
+            !! @param lbk_s Computational coordinates of the bubbles
+            !! @param lbk_pos Spatial coordinates of the bubbles
+            !! @param updatedvar Eulerian variable to be updated
+    subroutine s_hornemahesh(nBubs, lbk_rad, lbk_vel, lbk_s, lbk_pos, updatedvar)
+        integer, intent(in) :: nBubs
+        real(wp), dimension(1:lag_params%nBubs_glb, 1:3, 1:2), intent(in) :: lbk_s, lbk_pos
+        real(wp), dimension(1:lag_params%nBubs_glb, 1:2), intent(in) :: lbk_rad, lbk_vel
+        real(wp), intent(in) :: m
+        type(vector_field), intent(inout) :: updatedvar
+
+        real(wp), dimension(3) :: center ! Center of the bubble
+        integer, dimension(3) :: cell
+        real(wp) :: stddsv
+        real(wp) :: strength_vel, strength_vol
+
+        real(wp), dimension(3) :: nodecoord
+        real(wp) :: addFun1, addFun2
+        real(wp) :: func, volpart
+        integer, dimension(3) :: cellaux
+        real(wp), dimension(3) :: s_coord
+        integer :: l, i, j, k
+        logical :: celloutside
+        integer :: smearGrid, smearGridz
+
+        smearGrid = 2*mapCells + 1
+        smearGridz = smearGrid
+        if (p == 0) smearGridz = 1
+
+        do l = 1, nBubs
+            nodecoord(1:3) = 0
+            center(1:3) = 0._wp
+            volpart = 4._wp/3._wp*pi*lbk_rad(l, 2)**3._wp
+            s_coord(1:3) = lbk_s(l, 1:3, 2)
+            center(1:2) = lbk_pos(l, 1:2, 2)
+            if (p > 0) center(3) = lbk_pos(l, 3, 2)
+            call s_get_cell(s_coord, cell)
+            call s_compute_stddsv(cell, volpart, stddsv)
+            sigma = stddsv*(4*pi/3)**(1/3)*lbk_rad(l, 2)
+
+            strength_vol = volpart
+            strength_vel = 4._wp*pi*lbk_rad(l, 2)**2._wp*lbk_vel(l, 2)
+
+            do i = 1, smearGrid
+                do j = 1, smearGrid
+                    do k = 1, smearGridz
+                        cellaux(1) = cell(1) + i - (mapCells + 1)
+                        cellaux(2) = cell(2) + j - (mapCells + 1)
+                        cellaux(3) = cell(3) + k - (mapCells + 1)
+                        if (p == 0) cellaux(3) = 0
+
+                        ! Check if the cells intended to smear the bubbles in are in the computational domain and 
+                        ! redefine the cells for symmetric boundary
+                        call s_check_celloutside(cellaux, celloutside)
+
+                        if (.not. celloutside) then
+                            nodecoord(1) = x_cc(cellaux(1))
+                            nodecoord(2) = y_cc(cellaux(2))
+                            if (p > 0) nodecoord(3) = z_cc(cellaux(3))
+                            call s_applyhornemahesh(center, cellaux, nodecoord, stddsv, func)
+
+                            ! Relocate cells for bubbles intersecting symmetric boundaries
+                            if (bc_x%beg == -2 .or. bc_x%end == -2 .or. bc_y%beg == -2 .or. bc_y%end == -2 &
+                                .or. bc_z%beg == -2 .or. bc_z%end == -2) then
+                                call s_shift_cell_symmetric_bc(cellaux, cell)
+                            end if
+                        else
+                            func = 0._wp
+                            cellaux(1) = cell(1)
+                            cellaux(2) = cell(2)
+                            cellaux(3) = cell(3)
+                            if (p == 0) cellaux(3) = 0
+                        end if
+
+                        !Update void fraction field
+                        addFun1 = func*strength_vol
+                        updatedvar%vf(1)%sf(cellaux(1), cellaux(2), cellaux(3)) = &
+                            updatedvar%vf(1)%sf(cellaux(1), cellaux(2), cellaux(3)) &
+                            + addFun1
+
+                        !Update time derivative of void fraction
+                        addFun2 = func*strength_vel
+                        updatedvar%vf(2)%sf(cellaux(1), cellaux(2), cellaux(3)) = &
+                            updatedvar%vf(2)%sf(cellaux(1), cellaux(2), cellaux(3)) &
+                            + addFun2
+                    end do
+                end do
+            end do
+        end do
+    end subroutine s_hornemahesh
+
+    subroutine s_applyhornemahesh(center, cellaux, nodecoord, stddsv, sigma, func)
+                real(wp), dimension(3), intent(in) :: center
+                integer, dimension(3), intent(in) :: cellaux
+                real(wp), dimension(3), intent(in) :: nodecoord
+                real(wp), intent(in) :: stddsv, sigma
+                real(wp), intent(out) :: func
+        
+                real(wp) :: distance
+        
+                distance = sqrt((center(1) - nodecoord(1))**2._wp + (center(2) - nodecoord(2))**2._wp + (center(3) - nodecoord(3))**2._wp)
+        
+                if (num_dims == 3) then
+                    !< 3D gaussian function
+                    func = exp(((-distance)**2)/(2*sigma**2))/((2*pi)**(3/2)*stddsv**3) 
+                else
+                    if (cyl_coord) then
+                        ! TODO
+                    else
+                        ! 2D cartesian function:
+                        ! We smear particles considering a virtual depth (lag_params%charwidth)
+                        ! TODO
+                    end if
+                end if
+    end subroutine s_applyhornemahesh
 
     !> The purpose of this subroutine is to check if the current cell is outside the computational domain or not (including ghost cells).
             !! @param cellaux Tested cell to smear the bubble effect in.
