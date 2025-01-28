@@ -280,7 +280,6 @@ contains
         integer, intent(in) :: nBubs
         real(wp), dimension(1:lag_params%nBubs_glb, 1:3, 1:2), intent(in) :: lbk_s, lbk_pos
         real(wp), dimension(1:lag_params%nBubs_glb, 1:2), intent(in) :: lbk_rad, lbk_vel
-        real(wp), intent(in) :: m
         type(vector_field), intent(inout) :: updatedvar
 
         real(wp), dimension(3) :: center ! Center of the bubble
@@ -331,7 +330,7 @@ contains
                             nodecoord(1) = x_cc(cellaux(1))
                             nodecoord(2) = y_cc(cellaux(2))
                             if (p > 0) nodecoord(3) = z_cc(cellaux(3))
-                            call s_applyhornemahesh(center, cellaux, nodecoord, stddsv, func)
+                            call s_applyhornemahesh(center, cellaux, nodecoord, stddsv, sigma, func)
 
                             ! Relocate cells for bubbles intersecting symmetric boundaries
                             if (bc_x%beg == -2 .or. bc_x%end == -2 .or. bc_y%beg == -2 .or. bc_y%end == -2 &
