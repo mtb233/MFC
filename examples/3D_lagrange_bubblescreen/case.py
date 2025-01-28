@@ -143,7 +143,7 @@ print(
             "lag_params%solver_approach": 2,
             "lag_params%cluster_type": 2,
             "lag_params%pressure_corrector": "T",
-            "lag_params%smooth_type": 1,
+            "lag_params%smooth_type": 2,
             "lag_params%heatTransfer_model": "T",
             "lag_params%massTransfer_model": "T",
             "lag_params%epsilonb": 1.0,

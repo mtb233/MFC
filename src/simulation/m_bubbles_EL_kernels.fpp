@@ -31,11 +31,11 @@ contains
 
         smoothfunc:select case(lag_params%smooth_type)
         case (1)
-        call s_gaussian(nBubs, lbk_rad, lbk_vel, lbk_s, lbk_pos, updatedvar)
+            call s_deltafunc(nBubs, lbk_rad, lbk_vel, lbk_s, updatedvar)
         case (2)
-        call s_deltafunc(nBubs, lbk_rad, lbk_vel, lbk_s, updatedvar)
+            call s_gaussian(nBubs, lbk_rad, lbk_vel, lbk_s, lbk_pos, updatedvar)
         case (3)
-        call s_hornemahesh(nBubs, lbk_rad, lbk_vel, lbk_s, lbk_pos, 1._wp, updatedvar) ! TODO: Remove magic number here (m)
+            call s_hornemahesh(nBubs, lbk_rad, lbk_vel, lbk_s, lbk_pos, 1._wp, updatedvar) ! TODO: Remove magic number here (m)
         end select smoothfunc
 
     end subroutine s_smoothfunction
