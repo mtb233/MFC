@@ -906,10 +906,10 @@ contains
             ! Bubble dynamic closure from Maeda and Colonius (2018)
 
             ! Range of cells included in Omega
-            if (lag_params%smooth_type == 1) then
+            if (lag_params%smooth_type == 1 .or. lag_params%smooth_type == 3) then
                 mapCells_pinf = mapCells
             else
-                stop "lag_params%cluster_type: 2 requires lag_params%smooth_type: 1."
+                stop "lag_params%cluster_type: 2 requires lag_params%smooth_type: 1 or 3."
             end if
 
             ! Include the cell that contains the bubble (mapCells+1+mapCells)
