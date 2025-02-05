@@ -401,6 +401,7 @@ module m_derived_types
         integer :: cluster_type             !< Cluster model to find p_inf
         logical :: pressure_corrector       !< Cell pressure correction term
         integer :: smooth_type              !< Smoothing function. 1: Gaussian, 2:Delta 3x3
+        logical :: direct_stddsv
         logical :: heatTransfer_model       !< Activate HEAT transfer model at the bubble-liquid interface
         logical :: massTransfer_model       !< Activate MASS transfer model at the bubble-liquid interface
         logical :: write_bubbles            !< Write files to track the bubble evolution each time step
