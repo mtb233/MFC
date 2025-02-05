@@ -703,6 +703,7 @@ contains
         lag_params%cluster_type = dflt_int
         lag_params%pressure_corrector = .false.
         lag_params%smooth_type = dflt_int
+        lag_params%direct_stddsv = .false.
         lag_params%heatTransfer_model = .false.
         lag_params%massTransfer_model = .false.
         lag_params%write_bubbles = .false.
