@@ -937,7 +937,6 @@ When ``polytropic = 'F'``, the gas compression is modeled as non-polytropic due 
 | `solver_approach`     | Integer | 1: One-way coupling, 2: two-way coupling                  |
 | `cluster_type`        | Integer | Method to find p_inf                                      |
 | `pressure_corrector`  | Logical | Cell pressure correction term                             |
-| `smooth_type`         | Integer | Smoothing function. 1: Gaussian, 2:Delta 3x3              |
 | `heatTransfer_model`  | Logical | Activates the interface heat transfer model               |
 | `massTransfer_model`  | Logical | Activates the interface mass transfer model               |
 | `write_bubbles`       | Logical | Write files to track the bubble evolution each time step  |
@@ -951,8 +950,6 @@ When ``polytropic = 'F'``, the gas compression is modeled as non-polytropic due 
 - `solver_approach` Specifies the Euler-Lagrange coupling method: [1] enables a one-way coupling approach, where the bubbles do not influence the Eulerian field. [2] activates the two-way coupling approach based on \cite Maeda18, where the effect of the bubbles is added in the Eulerian field as source terms.
 
 - `cluster_type` Specifies method to find p_inf (pressure that drives the bubble dynamics): [1] activates the bilinear interpolation of the pressure field, while [2] enables the bubble dynamic closure based on \cite Maeda18, the full model is obtained when `pressure_corrector` is true.
-
-- `smooth_type` Specifies the smoothening method of projecting the lagrangian bubbles in the Eulerian field: [1] activates the gaussian kernel function described in  \cite Maeda18, while [2] activates the delta kernel function where the effect of the bubble is only seen in the specific bubble location cell.
 
 - `heatTransfer_model` Activates the heat transfer model at the bubble's interface based on (\cite Preston07).
 

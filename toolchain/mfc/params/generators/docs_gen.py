@@ -158,7 +158,7 @@ def _backtick_params(msg: str, pattern) -> str:
     Handles three cases in order:
     1. Compound names with % (e.g. bub_pp%mu_g, x_output%beg)
     2. Known registry param names (e.g. model_eqns, weno_order)
-    3. Snake_case identifiers not in registry (e.g. cluster_type, smooth_type)
+    3. Snake_case identifiers not in registry (e.g. cluster_type)
     """
     # 1. Wrap compound names (word%word patterns) — must come first
     msg = _COMPOUND_NAME_RE.sub(lambda m: f"`{m.group(0)}`", msg)

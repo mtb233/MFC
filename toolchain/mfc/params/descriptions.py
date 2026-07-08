@@ -485,6 +485,7 @@ PATTERNS = [
     (r"lag_params%solver_approach", "Lagrangian solver approach (1=one-way, 2=two-way coupling)"),
     (r"lag_params%cluster_type", "Cluster model for pressure at infinity"),
     (r"lag_params%pressure_corrector", "Enable cell pressure correction for Lagrangian bubbles"),
+    # TODO
     (r"lag_params%smooth_type", "Smoothing function type (1=Gaussian, 2=Delta 3x3)"),
     (r"lag_params%heatTransfer_model", "Enable heat transfer at bubble-liquid interface"),
     (r"lag_params%massTransfer_model", "Enable mass transfer at bubble-liquid interface"),

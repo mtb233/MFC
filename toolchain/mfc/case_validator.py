@@ -1300,8 +1300,6 @@ class CaseValidator:
         n = self.get("n", 0)
         file_per_process = self.get("file_per_process", "F") == "T"
         model_eqns = self.get("model_eqns")
-        cluster_type = self.get("lag_params%cluster_type")
-        smooth_type = self.get("lag_params%smooth_type")
         polytropic = self.get("polytropic", "F") == "T"
         thermal = self.get("thermal")
 
@@ -1310,7 +1308,6 @@ class CaseValidator:
         self.prohibit(model_eqns == 3, "The 6-equation flow model does not support bubbles_lagrange")
         self.prohibit(polytropic, "bubbles_lagrange requires polytropic = F")
         self.prohibit(thermal is not None and thermal != 3, "bubbles_lagrange requires thermal = 3")
-        self.prohibit(cluster_type is not None and cluster_type >= 2 and smooth_type != 1, "cluster_type >= 2 requires smooth_type = 1")
 
     def check_continuum_damage(self):
         """Checks continuum damage model parameters (simulation)"""

@@ -1052,13 +1052,13 @@ def _load():
 
     # lag_params (Lagrangian bubbles)
     # Members present in bubbles_lagrange_parameters: solver_approach, cluster_type,
-    # pressure_corrector, smooth_type, heatTransfer_model, massTransfer_model,
+    # pressure_corrector, kernel_shape, kernel_deviation_mode, kernel_extent, heatTransfer_model, massTransfer_model,
     # write_bubbles, write_bubbles_stats, nBubs_glb, epsilonb, charwidth, valmaxvoid.
     # T0/Thost/c0/rho0/x0 were removed from the Fortran type by upstream #1085/#1093
     # — they must NOT be registered (namelist read would crash).
     for a in ["heatTransfer_model", "massTransfer_model", "pressure_corrector", "write_bubbles", "write_bubbles_stats"]:
         _r(f"lag_params%{a}", LOG, {"bubbles"})
-    for a in ["solver_approach", "cluster_type", "smooth_type", "nBubs_glb"]:
+    for a in ["solver_approach", "cluster_type", "kernel_shape", "kernel_deviation_mode", "kernel_extent", "nBubs_glb"]:
         _r(f"lag_params%{a}", INT, {"bubbles"})
     for a in ["epsilonb", "valmaxvoid", "charwidth"]:
         _r(f"lag_params%{a}", REAL, {"bubbles"})

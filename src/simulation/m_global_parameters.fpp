@@ -532,7 +532,9 @@ contains
         lag_params%solver_approach = dflt_int
         lag_params%cluster_type = dflt_int
         lag_params%pressure_corrector = .false.
-        lag_params%smooth_type = dflt_int
+        lag_params%kernel_shape = dflt_int
+        lag_params%kernel_deviation_mode = dflt_int
+        lag_params%kernel_extent = dflt_int
         lag_params%heatTransfer_model = .false.
         lag_params%massTransfer_model = .false.
         lag_params%write_bubbles = .false.
