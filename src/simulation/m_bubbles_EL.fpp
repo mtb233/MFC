@@ -776,6 +776,9 @@ contains
         real(wp)                                            :: volgas, term1, Rbeq, denom
         real(wp)                                            :: charvol, charpres, charvol2, charpres2
         integer, dimension(3)                               :: cellaux
+        real(wp)                                            :: bubble_volume
+        real(wp)                                            :: kernel_deviation
+        integer, dimension(3)                               :: kernel_extent
         integer                                             :: i, j, k
         integer                                             :: smearGrid, smearGridz
         logical                                             :: celloutside
@@ -863,26 +866,22 @@ contains
         else if (lag_params%cluster_type >= 2) then
             ! Bubble dynamic closure from Maeda and Colonius (2018)
 
-            ! Include the cell that contains the bubble (mapCells+1+mapCells)
-            smearGrid = mapCells - (-mapCells) + 1
-            smearGridz = smearGrid
-            if (p == 0) smearGridz = 1
-
             charvol = 0._wp
             charpres = 0._wp
             charvol2 = 0._wp
             charpres2 = 0._wp
             vol = 0._wp
 
-            $:GPU_LOOP(parallelism='[seq]')
-            do i = 1, smearGrid
-                $:GPU_LOOP(parallelism='[seq]')
-                do j = 1, smearGrid
-                    $:GPU_LOOP(parallelism='[seq]')
-                    do k = 1, smearGridz
-                        cellaux(1) = cell(1) + i - (mapCells + 1)
-                        cellaux(2) = cell(2) + j - (mapCells + 1)
-                        cellaux(3) = cell(3) + k - (mapCells + 1)
+            bubble_volume = 4.0_wp/3.0_wp*pi*intfc_rad(bub_id, 2)**3.0_wp
+            call s_computeKernelDeviation(cell, bubble_volume, kernel_deviation)
+            call s_computeKernelExtent(cell, kernel_deviation, kernel_extent)
+
+            do i = 1, (1 + 2*kernel_extent(1))
+                do j = 1, (1 + 2*kernel_extent(2))
+                    do k = 1, (1 + 2*kernel_extent(3))
+                        cellaux(1) = cell(1) + i - (kernel_extent(1) + 1)
+                        cellaux(2) = cell(2) + j - (kernel_extent(2) + 1)
+                        cellaux(3) = cell(3) + k - (kernel_extent(3) + 1)
                         if (p == 0) cellaux(3) = 0
 
                         !> check if the current cell is outside the computational domain or not (including ghost cells)
