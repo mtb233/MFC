@@ -53,7 +53,8 @@ if __name__ == "__main__":
             # =============================================================================
 
             analytical = (pd.read_csv("projects/kernel_study/post_process/analytical_solution.csv", header=None).sort_values(by=0))
-            time_offset = 3.24
+            # 3.24
+            time_offset = 0.0
             time_analytical = analytical[0] * 1e6 / freq + time_offset
             radius_analytical = analytical[1]
 
@@ -72,14 +73,12 @@ if __name__ == "__main__":
 
             ax.plot(time, radius, color="blue", linewidth=1, label="Testing")
 
-            ax.plot(time_golden[::10], radius_golden[::10], "o", markersize=2.5, 
-                markerfacecolor="none", markeredgecolor="black", label="Golden")
+            #ax.plot(time_golden[::10], radius_golden[::10], "o", markersize=2.5, markerfacecolor="none", markeredgecolor="black", label="Golden")
 
-            ax.plot(time_analytical, radius_analytical, "--", color="black",
-                linewidth=1, label="Analytical solution")
+            #ax.plot(time_analytical, radius_analytical, "--", color="black", linewidth=1, label="Analytical solution")
 
-            ax.text(15, 1.00, f"RMSE (golden): {golden_error:.2f}%", fontsize='small')
-            ax.text(15, 0.90, f"RMSE (analytical): {analytical_error:.2f}%", fontsize='small')
+            #ax.text(15, 1.00, f"RMSE (golden): {golden_error:.2f}%", fontsize='small')
+            #ax.text(15, 0.90, f"RMSE (analytical): {analytical_error:.2f}%", fontsize='small')
 
             ax.set_xlim(time_analytical.min(), time_analytical.max())
             ax.set_ylim(0.5, 2.0)
