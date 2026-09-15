@@ -236,15 +236,10 @@ generate_case("projects/kernel_study/cases/df_medium",   70,     1, 0, 0, 1.0,  
 generate_case("projects/kernel_study/cases/df_small",    140,    1, 0, 0, 1.0,   1.75e-3, 0.875e-3, 0.875e-3)
 generate_case("projects/kernel_study/cases/df_tiny",     280,    1, 0, 0, 1.0,   1.75e-3, 0.875e-3, 0.875e-3)
 
-generate_case("projects/kernel_study/cases/mc3_large",   35,     1, 1, 3, 1.0,   0.0, 0.0, 0.0)
-generate_case("projects/kernel_study/cases/mc3_medium",  70,     1, 1, 3, 1.0,   3.5e-3, 1.75e-3, 1.75e-3)
-generate_case("projects/kernel_study/cases/mc3_small",   140,    1, 1, 3, 1.0,   1.75e-3, 0.875e-3, 0.875e-3)
-generate_case("projects/kernel_study/cases/mc3_tiny",    280,    1, 1, 3, 1.0,   1.75e-3, 0.875e-3, 0.875e-3)
-
-generate_case("projects/kernel_study/cases/mc0_large",   35,     1, 1, 0, 1.0,   0.0, 0.0, 0.0)
-generate_case("projects/kernel_study/cases/mc0_medium",  70,     1, 1, 0, 1.0,   3.5e-3, 1.75e-3, 1.75e-3)
-generate_case("projects/kernel_study/cases/mc0_small",   140,    1, 1, 0, 1.0,   1.75e-3, 0.875e-3, 0.875e-3)
-generate_case("projects/kernel_study/cases/mc0_tiny",    280,    1, 1, 0, 1.0,   1.75e-3, 0.875e-3, 0.875e-3)
+generate_case("projects/kernel_study/cases/mc_large",   35,     1, 1, 0, 1.0,   0.0, 0.0, 0.0)
+generate_case("projects/kernel_study/cases/mc_medium",  70,     1, 1, 0, 1.0,   3.5e-3, 1.75e-3, 1.75e-3)
+generate_case("projects/kernel_study/cases/mc_small",   140,    1, 1, 0, 1.0,   1.75e-3, 0.875e-3, 0.875e-3)
+generate_case("projects/kernel_study/cases/mc_tiny",    280,    1, 1, 0, 1.0,   1.75e-3, 0.875e-3, 0.875e-3)
 
 generate_case("projects/kernel_study/cases/k1_large",    35,     1, 2, 0, 2*math.sqrt(2/math.pi),    0.0, 0.0, 0.0)
 generate_case("projects/kernel_study/cases/k1_medium",   70,     1, 2, 0, 2*math.sqrt(2/math.pi),    3.5e-3, 1.75e-3, 1.75e-3)
