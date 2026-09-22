@@ -11,7 +11,7 @@ module m_bubbles_EL_kernels
     implicit none
 
 contains
-    pure elemental subroutine s_get_char_vol(cellx, celly, cellz, Charvol)
+    elemental subroutine s_get_char_vol(cellx, celly, cellz, Charvol)
 
         integer, intent(in)   :: cellx, celly, cellz
         real(wp), intent(out) :: Charvol
@@ -28,7 +28,7 @@ contains
 
     end subroutine s_get_char_vol
 
-    pure subroutine s_getBubbleCell(bubble_coords, cell_coord)
+    subroutine s_getBubbleCell(bubble_coords, cell_coord)
 
         real(wp), dimension(3), intent(in) :: bubble_coords
         integer, dimension(3), intent(out) :: cell_coord
@@ -43,7 +43,7 @@ contains
 
     end subroutine s_getBubbleCell
 
-    pure subroutine s_computeKernelDeviation(cell_coord, bubble_volume, kernel_deviation)
+    subroutine s_computeKernelDeviation(cell_coord, bubble_volume, kernel_deviation)
 
         integer, dimension(3), intent(in) :: cell_coord
         real(wp), intent(in)              :: bubble_volume
@@ -72,7 +72,7 @@ contains
 
     end subroutine s_computeKernelDeviation
 
-    pure subroutine s_computeKernelExtent(cell_coord, kernel_deviation, kernel_extent)
+    subroutine s_computeKernelExtent(cell_coord, kernel_deviation, kernel_extent)
 
         integer, dimension(3), intent(in)  :: cell_coord
         real(wp), intent(in)               :: kernel_deviation
@@ -106,7 +106,7 @@ contains
 
     end subroutine s_computeKernelExtent
 
-    pure subroutine s_isCellOutside(cell_coord, cell_outside)
+    subroutine s_isCellOutside(cell_coord, cell_outside)
 
         integer, dimension(3), intent(inout) :: cell_coord
         logical, intent(out)                 :: cell_outside
@@ -133,7 +133,7 @@ contains
 
     end subroutine s_isCellOutside
 
-    pure subroutine s_applyGaussianShape(bubble_position, cell_position, cell_coord, kernel_deviation, kernel_value)
+    subroutine s_applyGaussianShape(bubble_position, cell_position, cell_coord, kernel_deviation, kernel_value)
 
         real(wp), dimension(3), intent(in) :: bubble_position
         real(wp), dimension(3), intent(in) :: cell_position
@@ -153,12 +153,12 @@ contains
         else
             distance = sqrt((bubble_position(1) - cell_position(1))**2.0_wp + (bubble_position(2) - cell_position(2))**2.0_wp &
                             & + (bubble_position(3) - cell_position(3))**2.0_wp)
-            kernel_value = exp(-0.5_wp*(distance/kernel_deviation)**2.0_wp)/(sqrt(2.0_wp*pi)*kernel_deviation)**num_dims
+            kernel_value = exp(-0.5_wp*(distance/kernel_deviation)**2.0_wp)/((sqrt(2.0_wp*pi)*kernel_deviation)**num_dims)
         end if
 
     end subroutine s_applyGaussianShape
 
-    pure subroutine s_shiftCellSymmetric(target_cell_coord, cell_coord, kernel_extent)
+    subroutine s_shiftCellSymmetric(target_cell_coord, cell_coord, kernel_extent)
 
         integer, dimension(3), intent(inout) :: target_cell_coord
         integer, dimension(3), intent(in)    :: cell_coord
@@ -193,26 +193,7 @@ contains
 
     end subroutine s_shiftCellSymmetric
 
-    pure subroutine s_updateVoidFractionVariables(variables, cell_coord, volume, volume_derivative, factor)
-
-        type(scalar_field), dimension(:), intent(inout) :: variables
-        integer, dimension(3), intent(in)               :: cell_coord
-        real(wp), intent(in)                            :: volume
-        real(wp), intent(in)                            :: volume_derivative
-        real(wp), intent(in)                            :: factor
-
-        ! Update void fraction field
-
-        variables(1)%sf(cell_coord(1), cell_coord(2), cell_coord(3)) = variables(1)%sf(cell_coord(1), cell_coord(2), &
-                  & cell_coord(3)) + real(volume*factor, kind=stp)
-
-        ! Update time derivative of void fraction
-        variables(2)%sf(cell_coord(1), cell_coord(2), cell_coord(3)) = variables(2)%sf(cell_coord(1), cell_coord(2), &
-                  & cell_coord(3)) + real(volume_derivative*factor, kind=stp)
-
-    end subroutine s_updatevoidfractionvariables
-
-    pure subroutine s_applyKernel(bubble_count, bubble_radii, bubble_rdots, bubble_coords, bubble_positions, variables)
+    subroutine s_applyKernel(bubble_count, bubble_radii, bubble_rdots, bubble_coords, bubble_positions, variables)
 
         integer, intent(in)                                             :: bubble_count
         real(wp), dimension(1:lag_params%nBubs_glb,1:2), intent(in)     :: bubble_radii
@@ -231,11 +212,14 @@ contains
         real(wp)                                                        :: kernel_value
         real(wp), dimension(3)                                          :: target_cell_position
         integer, dimension(3)                                           :: target_cell_coord
+        real(wp)                                                        :: target_cell_volume
         logical                                                         :: target_cell_outside
         integer                                                         :: l
         integer                                                         :: i
         integer                                                         :: j
         integer                                                         :: k
+        real(wp)                                                        :: smeared_volume
+        real(wp)                                                        :: correction_factor
 
         do l = 1, bubble_count
             bubble_position(1:2) = bubble_positions(l,1:2,2)
@@ -250,6 +234,8 @@ contains
             call s_computeKernelDeviation(cell_coord, bubble_volume, kernel_deviation)
             call s_computeKernelExtent(cell_coord, kernel_deviation, kernel_extent)
 
+            ! Calculate correction factor
+            smeared_volume = 0.0_wp
             do i = 1, (1 + 2*kernel_extent(1))
                 do j = 1, (1 + 2*kernel_extent(2))
                     do k = 1, (1 + 2*kernel_extent(3))
@@ -292,15 +278,84 @@ contains
                                 target_cell_coord(3) = cell_coord(3)
                             end if
                         end if
-                        call s_updateVoidFractionVariables(variables, target_cell_coord, bubble_volume, bubble_vdot, kernel_value)
+                        target_cell_volume = dx(target_cell_coord(1))*dy(target_cell_coord(2))*dz(target_cell_coord(3))
+                        smeared_volume = smeared_volume + bubble_volume*kernel_value*target_cell_volume
                     end do
                 end do
             end do
+            correction_factor = bubble_volume/smeared_volume
+            print *, "Pre-correction:"
+            print *, achar(9), "Total volume: ", bubble_volume
+            print *, achar(9), "Smeared volume: ", smeared_volume
+            print *, achar(9), "Ratio: ", smeared_volume/bubble_volume
+
+            smeared_volume = 0.0_wp
+            do i = 1, (1 + 2*kernel_extent(1))
+                do j = 1, (1 + 2*kernel_extent(2))
+                    do k = 1, (1 + 2*kernel_extent(3))
+                        target_cell_coord(1) = cell_coord(1) + i - (kernel_extent(1) + 1)
+                        target_cell_coord(2) = cell_coord(2) + j - (kernel_extent(2) + 1)
+                        if (p == 0) then
+                            target_cell_coord(3) = 0
+                        else
+                            target_cell_coord(3) = cell_coord(3) + k - (kernel_extent(3) + 1)
+                        end if
+
+                        call s_isCellOutside(target_cell_coord, target_cell_outside)
+                        if (.not. target_cell_outside) then
+                            target_cell_position(1) = x_cc(target_cell_coord(1))
+                            target_cell_position(2) = y_cc(target_cell_coord(2))
+                            if (p == 0) then
+                                target_cell_position(3) = 0
+                            else
+                                target_cell_position(3) = z_cc(target_cell_coord(3))
+                            end if
+
+                            ! Shape select
+                            select case (lag_params%kernel_shape)
+                            case (1)
+                                call s_applyGaussianShape(bubble_position, target_cell_position, target_cell_coord, &
+                                                          & kernel_deviation, kernel_value)
+                            end select
+
+                            ! Relocate cells for bubbles intersecting symmetric boundaries
+                            if (any((/bc_x%beg, bc_x%end, bc_y%beg, bc_y%end, bc_z%beg, bc_z%end/) == BC_REFLECTIVE)) then
+                                call s_shiftCellSymmetric(target_cell_coord, cell_coord, kernel_extent)
+                            end if
+                        else
+                            kernel_value = 0.0_wp
+                            target_cell_coord(1) = cell_coord(1)
+                            target_cell_coord(2) = cell_coord(2)
+                            if (p == 0) then
+                                target_cell_coord(3) = 0
+                            else
+                                target_cell_coord(3) = cell_coord(3)
+                            end if
+                        end if
+                        target_cell_volume = dx(target_cell_coord(1))*dy(target_cell_coord(2))*dz(target_cell_coord(3))
+
+                        ! Update void fraction field
+                        variables(1)%sf(target_cell_coord(1), target_cell_coord(2), target_cell_coord(3)) = &
+                        & variables(1)%sf(target_cell_coord(1), target_cell_coord(2), target_cell_coord(3)) + &
+                        & real(bubble_volume*kernel_value*correction_factor, kind=stp)
+                        smeared_volume = smeared_volume + bubble_volume*kernel_value*target_cell_volume*correction_factor
+
+                        ! Update time derivative of void fraction
+                        variables(2)%sf(target_cell_coord(1), target_cell_coord(2), target_cell_coord(3)) = &
+                        & variables(2)%sf(target_cell_coord(1), target_cell_coord(2), target_cell_coord(3)) + &
+                        & real(bubble_vdot*kernel_value*correction_factor, kind=stp)
+                    end do
+                end do
+            end do
+            print *, "Post-correction:"
+            print *, achar(9), "Total volume: ", bubble_volume
+            print *, achar(9), "Smeared volume: ", smeared_volume
+            print *, achar(9), "Ratio: ", smeared_volume/bubble_volume
         end do
 
     end subroutine s_applyKernel
 
-    pure subroutine s_smoothfunction(bubble_count, bubble_radii, bubble_rdots, bubble_coords, bubble_positions, variables)
+    subroutine s_smoothfunction(bubble_count, bubble_radii, bubble_rdots, bubble_coords, bubble_positions, variables)
 
         integer, intent(in)                                             :: bubble_count
         real(wp), dimension(1:lag_params%nBubs_glb,1:2), intent(in)     :: bubble_radii
