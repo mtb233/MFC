@@ -165,6 +165,7 @@ def write_case_json(
       'lag_params%kernel_shape'          : kernel_shape,
       'lag_params%kernel_deviation_mode' : kernel_deviation_mode,
       'lag_params%kernel_extent'         : kernel_extent,
+      'lag_params%weight_normalization'  : 'T',
       'lag_params%heatTransfer_model'    : 'T',
       'lag_params%massTransfer_model'    : 'T',
       'lag_params%epsilonb'              : epsilonb,

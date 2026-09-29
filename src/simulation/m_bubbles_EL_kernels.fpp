@@ -235,59 +235,62 @@ contains
             call s_computeKernelExtent(cell_coord, kernel_deviation, kernel_extent)
 
             ! Calculate correction factor
+            correction_factor = 1.0_wp
             smeared_volume = 0.0_wp
-            do i = 1, (1 + 2*kernel_extent(1))
-                do j = 1, (1 + 2*kernel_extent(2))
-                    do k = 1, (1 + 2*kernel_extent(3))
-                        target_cell_coord(1) = cell_coord(1) + i - (kernel_extent(1) + 1)
-                        target_cell_coord(2) = cell_coord(2) + j - (kernel_extent(2) + 1)
-                        if (p == 0) then
-                            target_cell_coord(3) = 0
-                        else
-                            target_cell_coord(3) = cell_coord(3) + k - (kernel_extent(3) + 1)
-                        end if
-
-                        call s_isCellOutside(target_cell_coord, target_cell_outside)
-                        if (.not. target_cell_outside) then
-                            target_cell_position(1) = x_cc(target_cell_coord(1))
-                            target_cell_position(2) = y_cc(target_cell_coord(2))
-                            if (p == 0) then
-                                target_cell_position(3) = 0
-                            else
-                                target_cell_position(3) = z_cc(target_cell_coord(3))
-                            end if
-
-                            ! Shape select
-                            select case (lag_params%kernel_shape)
-                            case (1)
-                                call s_applyGaussianShape(bubble_position, target_cell_position, target_cell_coord, &
-                                                          & kernel_deviation, kernel_value)
-                            end select
-
-                            ! Relocate cells for bubbles intersecting symmetric boundaries
-                            if (any((/bc_x%beg, bc_x%end, bc_y%beg, bc_y%end, bc_z%beg, bc_z%end/) == BC_REFLECTIVE)) then
-                                call s_shiftCellSymmetric(target_cell_coord, cell_coord, kernel_extent)
-                            end if
-                        else
-                            kernel_value = 0.0_wp
-                            target_cell_coord(1) = cell_coord(1)
-                            target_cell_coord(2) = cell_coord(2)
+            if (lag_params%weight_normalization) then
+                do i = 1, (1 + 2*kernel_extent(1))
+                    do j = 1, (1 + 2*kernel_extent(2))
+                        do k = 1, (1 + 2*kernel_extent(3))
+                            target_cell_coord(1) = cell_coord(1) + i - (kernel_extent(1) + 1)
+                            target_cell_coord(2) = cell_coord(2) + j - (kernel_extent(2) + 1)
                             if (p == 0) then
                                 target_cell_coord(3) = 0
                             else
-                                target_cell_coord(3) = cell_coord(3)
+                                target_cell_coord(3) = cell_coord(3) + k - (kernel_extent(3) + 1)
                             end if
-                        end if
-                        target_cell_volume = dx(target_cell_coord(1))*dy(target_cell_coord(2))*dz(target_cell_coord(3))
-                        smeared_volume = smeared_volume + bubble_volume*kernel_value*target_cell_volume
+
+                            call s_isCellOutside(target_cell_coord, target_cell_outside)
+                            if (.not. target_cell_outside) then
+                                target_cell_position(1) = x_cc(target_cell_coord(1))
+                                target_cell_position(2) = y_cc(target_cell_coord(2))
+                                if (p == 0) then
+                                    target_cell_position(3) = 0
+                                else
+                                    target_cell_position(3) = z_cc(target_cell_coord(3))
+                                end if
+
+                                ! Shape select
+                                select case (lag_params%kernel_shape)
+                                case (1)
+                                    call s_applyGaussianShape(bubble_position, target_cell_position, target_cell_coord, &
+                                                              & kernel_deviation, kernel_value)
+                                end select
+
+                                ! Relocate cells for bubbles intersecting symmetric boundaries
+                                if (any((/bc_x%beg, bc_x%end, bc_y%beg, bc_y%end, bc_z%beg, bc_z%end/) == BC_REFLECTIVE)) then
+                                    call s_shiftCellSymmetric(target_cell_coord, cell_coord, kernel_extent)
+                                end if
+                            else
+                                kernel_value = 0.0_wp
+                                target_cell_coord(1) = cell_coord(1)
+                                target_cell_coord(2) = cell_coord(2)
+                                if (p == 0) then
+                                    target_cell_coord(3) = 0
+                                else
+                                    target_cell_coord(3) = cell_coord(3)
+                                end if
+                            end if
+                            target_cell_volume = dx(target_cell_coord(1))*dy(target_cell_coord(2))*dz(target_cell_coord(3))
+                            smeared_volume = smeared_volume + bubble_volume*kernel_value*target_cell_volume
+                        end do
                     end do
                 end do
-            end do
-            correction_factor = bubble_volume/smeared_volume
-            print *, "Pre-correction:"
-            print *, achar(9), "Total volume: ", bubble_volume
-            print *, achar(9), "Smeared volume: ", smeared_volume
-            print *, achar(9), "Ratio: ", smeared_volume/bubble_volume
+                correction_factor = bubble_volume/smeared_volume
+                print *, "Pre-correction:"
+                print *, achar(9), "Total volume: ", bubble_volume
+                print *, achar(9), "Smeared volume: ", smeared_volume
+                print *, achar(9), "Ratio: ", smeared_volume/bubble_volume
+            end if
 
             smeared_volume = 0.0_wp
             do i = 1, (1 + 2*kernel_extent(1))

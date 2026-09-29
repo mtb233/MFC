@@ -513,6 +513,7 @@ module m_derived_types
         integer  :: kernel_shape
         integer  :: kernel_deviation_mode
         integer  :: kernel_extent
+        logical  :: weight_normalization
         logical  :: heatTransfer_model   !< Activate HEAT transfer model at the bubble-liquid interface
         logical  :: massTransfer_model   !< Activate MASS transfer model at the bubble-liquid interface
         logical  :: write_bubbles        !< Write files to track the bubble evolution each time step

@@ -612,7 +612,7 @@ def test_generate_bcast_fpp_lag_params_registry_walk():
     # All registered members must appear
     for mem in ("solver_approach", "cluster_type", "kernel_shape", "kernel_deviation_mode", "kernel_extent", "nBubs_glb"):
         assert f"lag_params%{mem}" in sim, f"lag_params%{mem} missing from sim"
-    for mem in ("heatTransfer_model", "massTransfer_model", "pressure_corrector", "write_bubbles", "write_bubbles_stats"):
+    for mem in ("heatTransfer_model", "massTransfer_model", "pressure_corrector", "write_bubbles", "write_bubbles_stats", "weight_normalization"):
         assert f"lag_params%{mem}" in sim, f"lag_params%{mem} missing from sim"
     for mem in ("epsilonb", "charwidth", "valmaxvoid"):
         assert f"lag_params%{mem}" in sim, f"lag_params%{mem} missing from sim"

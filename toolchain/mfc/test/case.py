@@ -140,6 +140,7 @@ BASE_CFG = {
     "lag_params%kernel_shape": 1,
     "lag_params%kernel_deviation_mode": 1,
     "lag_params%kernel_extent": 1,
+    "lag_params%weight_normalization" : "F",
     "lag_params%epsilonb": 1.0,
     "lag_params%heatTransfer_model": "F",
     "lag_params%massTransfer_model": "F",
