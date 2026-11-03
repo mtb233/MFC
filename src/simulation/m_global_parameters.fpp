@@ -555,6 +555,8 @@ contains
         lag_params%kernel_deviation_mode = dflt_int
         lag_params%kernel_extent = dflt_int
         lag_params%weight_normalization = .false.
+        lag_params%kernel_blending = .false.
+        lag_params%kernel_void_cap = dflt_real
         lag_params%heatTransfer_model = .false.
         lag_params%massTransfer_model = .false.
         lag_params%write_bubbles = .false.

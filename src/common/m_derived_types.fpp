@@ -514,6 +514,8 @@ module m_derived_types
         integer  :: kernel_deviation_mode
         integer  :: kernel_extent
         logical  :: weight_normalization
+        logical  :: kernel_blending      !< Blend the Gaussian kernel with a flat one to cap the void fraction
+        real(wp) :: kernel_void_cap      !< Per-bubble peak void fraction targeted by kernel_blending
         logical  :: heatTransfer_model   !< Activate HEAT transfer model at the bubble-liquid interface
         logical  :: massTransfer_model   !< Activate MASS transfer model at the bubble-liquid interface
         logical  :: write_bubbles        !< Write files to track the bubble evolution each time step

@@ -944,6 +944,8 @@ When ``polytropic = 'F'``, the gas compression is modeled as non-polytropic due 
 | `epsilonb`            | Real    | Standard deviation scaling for the gaussian function      |
 | `charwidth`           | Real    | Domain virtual depth (z direction, for 2D simulations)    |
 | `valmaxvoid`          | Real    | Maximum void fraction permitted                           |
+| `kernel_blending`     | Logical | Blend the smoothing kernel with a flat kernel             |
+| `kernel_void_cap`     | Real    | Peak per-bubble void fraction targeted by `kernel_blending` |
 
 - `nBubs_glb` Total number of bubbles. Their initial conditions need to be specified in the ./input/lag_bubbles.dat file. See the example cases for additional information.
 
@@ -954,6 +956,8 @@ When ``polytropic = 'F'``, the gas compression is modeled as non-polytropic due 
 - `heatTransfer_model` Activates the heat transfer model at the bubble's interface based on (\cite Preston07).
 
 - `massTransfer_model` Activates the mass transfer model at the bubble's interface based on (\cite Preston07).
+
+- `kernel_blending` Replaces each bubble's kernel \f$K\f$ with \f$(1-w)K + w/V_s\f$, a blend with a flat kernel over the stencil volume \f$V_s\f$. The weight \f$w\f$ is the smallest value that keeps that bubble's peak void fraction at or below `kernel_void_cap`, and the stencil is widened if needed so the flat part alone fits under the cap. The blend conserves bubble volume when `weight_normalization` is true. The cap applies per bubble; overlapping bubbles can still sum past it, and `valmaxvoid` remains the hard limit.
 
 ### 10. Velocity Field Setup {#sec-velocity-field-setup}
 

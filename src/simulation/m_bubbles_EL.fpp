@@ -874,7 +874,7 @@ contains
 
             bubble_volume = 4.0_wp/3.0_wp*pi*intfc_rad(bub_id, 2)**3.0_wp
             call s_computeKernelDeviation(cell, bubble_volume, kernel_deviation)
-            call s_computeKernelExtent(cell, kernel_deviation, kernel_extent)
+            call s_computeKernelExtent(cell, bubble_volume, kernel_deviation, kernel_extent)
 
             do i = 1, (1 + 2*kernel_extent(1))
                 do j = 1, (1 + 2*kernel_extent(2))

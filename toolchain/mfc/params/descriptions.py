@@ -501,6 +501,8 @@ PATTERNS = [
     (r"lag_params%epsilonb", "Standard deviation scaling for Gaussian smoothing"),
     (r"lag_params%charwidth", "Domain virtual depth for 2D simulations"),
     (r"lag_params%valmaxvoid", "Maximum permitted void fraction"),
+    (r"lag_params%kernel_blending", "Blend the smoothing kernel with a flat kernel to cap the per-bubble void fraction"),
+    (r"lag_params%kernel_void_cap", "Peak per-bubble void fraction targeted by kernel_blending"),
     (r"lag_params%(\w+)", "Lagrangian tracking parameter: {0}"),
     # chem_params patterns - specific fields first
     (r"chem_params%diffusion", "Enable species diffusion for chemistry"),

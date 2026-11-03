@@ -122,7 +122,7 @@ PHYSICS_DOCS = {
     "check_bubbles_lagrange": {
         "title": "Euler-Lagrange Bubble Model",
         "category": "Bubble Physics",
-        "explanation": "2D/3D only. Requires polytropic = F and thermal = 3. Not compatible with model_eqns = 3.",
+        "explanation": "2D/3D only. Requires polytropic = F and thermal = 3. Not compatible with model_eqns = 3. With kernel_blending, 0 < kernel_void_cap <= valmaxvoid.",
     },
     # Numerical Schemes
     "check_weno": {
@@ -1308,6 +1308,12 @@ class CaseValidator:
         self.prohibit(model_eqns == 3, "The 6-equation flow model does not support bubbles_lagrange")
         self.prohibit(polytropic, "bubbles_lagrange requires polytropic = F")
         self.prohibit(thermal is not None and thermal != 3, "bubbles_lagrange requires thermal = 3")
+
+        if self.get("lag_params%kernel_blending", "F") == "T":
+            cap = self.get("lag_params%kernel_void_cap")
+            valmaxvoid = self.get("lag_params%valmaxvoid")
+            self.prohibit(cap is None or not 0 < cap <= 1, "lag_params%kernel_blending requires 0 < lag_params%kernel_void_cap <= 1")
+            self.prohibit(cap is not None and valmaxvoid is not None and cap > valmaxvoid, "lag_params%kernel_void_cap must not exceed lag_params%valmaxvoid")
 
     def check_continuum_damage(self):
         """Checks continuum damage model parameters (simulation)"""
