@@ -1315,6 +1315,21 @@ class CaseValidator:
             self.prohibit(cap is None or not 0 < cap <= 1, "lag_params%kernel_blending requires 0 < lag_params%kernel_void_cap <= 1")
             self.prohibit(cap is not None and valmaxvoid is not None and cap > valmaxvoid, "lag_params%kernel_void_cap must not exceed lag_params%valmaxvoid")
 
+        pinf_pulse = self.get("lag_params%pinf_pulse")
+        if pinf_pulse is not None:
+            self.prohibit(pinf_pulse not in [1, 2, 3], "Only lag_params%pinf_pulse = 1, 2, or 3 is allowed")
+            self.prohibit(self.get("lag_params%pinf_mean") is None, "lag_params%pinf_mean must be specified for lag_params%pinf_pulse")
+            self.prohibit(self.get("lag_params%pinf_mag") is None, "lag_params%pinf_mag must be specified for lag_params%pinf_pulse")
+            self.prohibit(self.get("lag_params%pressure_corrector", "F") == "T", "lag_params%pressure_corrector is not used with lag_params%pinf_pulse")
+            if pinf_pulse in [1, 3]:
+                freq = self.get("lag_params%pinf_frequency")
+                npulse = self.get("lag_params%pinf_npulse")
+                self.prohibit(freq is None or freq <= 0, "lag_params%pinf_frequency must be positive for lag_params%pinf_pulse = 1 or 3")
+                self.prohibit(npulse is None or npulse <= 0, "lag_params%pinf_npulse must be positive for lag_params%pinf_pulse = 1 or 3")
+            if pinf_pulse == 2:
+                sigma = self.get("lag_params%pinf_gauss_sigma_time")
+                self.prohibit(sigma is None or sigma <= 0, "lag_params%pinf_gauss_sigma_time must be positive for lag_params%pinf_pulse = 2")
+
     def check_continuum_damage(self):
         """Checks continuum damage model parameters (simulation)"""
         cont_damage = self.get("cont_damage", "F") == "T"

@@ -565,6 +565,13 @@ contains
         lag_params%epsilonb = 1._wp
         lag_params%charwidth = dflt_real
         lag_params%valmaxvoid = dflt_real
+        lag_params%pinf_pulse = dflt_int
+        lag_params%pinf_mean = dflt_real
+        lag_params%pinf_mag = dflt_real
+        lag_params%pinf_frequency = dflt_real
+        lag_params%pinf_gauss_sigma_time = dflt_real
+        lag_params%pinf_npulse = dflt_real
+        lag_params%pinf_delay = 0._wp
 
         ! Continuum damage model
         tau_star = dflt_real

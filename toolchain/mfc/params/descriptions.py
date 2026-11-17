@@ -503,6 +503,13 @@ PATTERNS = [
     (r"lag_params%valmaxvoid", "Maximum permitted void fraction"),
     (r"lag_params%kernel_blending", "Blend the smoothing kernel with a flat kernel to cap the per-bubble void fraction"),
     (r"lag_params%kernel_void_cap", "Peak per-bubble void fraction targeted by kernel_blending"),
+    (r"lag_params%pinf_pulse", "Analytic bubble driving pressure pulse (1=sine, 2=Gaussian, 3=square)"),
+    (r"lag_params%pinf_mean", "Mean of the analytic bubble driving pressure"),
+    (r"lag_params%pinf_mag", "Pulse magnitude of the analytic bubble driving pressure"),
+    (r"lag_params%pinf_frequency", "Pulse frequency of the analytic bubble driving pressure"),
+    (r"lag_params%pinf_gauss_sigma_time", "Gaussian pulse width in time of the analytic bubble driving pressure"),
+    (r"lag_params%pinf_npulse", "Number of pulse cycles of the analytic bubble driving pressure"),
+    (r"lag_params%pinf_delay", "Time delay of the analytic bubble driving pressure pulse"),
     (r"lag_params%(\w+)", "Lagrangian tracking parameter: {0}"),
     # chem_params patterns - specific fields first
     (r"chem_params%diffusion", "Enable species diffusion for chemistry"),

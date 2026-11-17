@@ -492,6 +492,7 @@ contains
         real(wp)                                               :: myR, myV, myBeta_c, myBeta_t, myR0, myPbdot, myMvdot
         real(wp)                                               :: myPinf, aux1, aux2, myCson, myRho
         real(wp)                                               :: gamma, pi_inf, qv
+        real(wp)                                               :: pinf_analytic, t_pulse, sine_wave
 
         #:if not MFC_CASE_OPTIMIZATION and USING_AMD
             real(wp), dimension(3) :: myalpha_rho, myalpha
@@ -529,13 +530,27 @@ contains
             $:END_GPU_PARALLEL_LOOP()
         end if
 
+        ! Analytic driving pressure, with the same pulse shapes as acoustic(i)%pulse
+        pinf_analytic = 0._wp
+        if (lag_params%pinf_pulse > 0) then
+            pinf_analytic = lag_params%pinf_mean
+            t_pulse = mytime - lag_params%pinf_delay
+            if (lag_params%pinf_pulse == 2) then
+                pinf_analytic = pinf_analytic + lag_params%pinf_mag*exp(-0.5_wp*(t_pulse/lag_params%pinf_gauss_sigma_time)**2._wp)
+            else if (t_pulse >= 0._wp .and. t_pulse*lag_params%pinf_frequency <= lag_params%pinf_npulse) then
+                sine_wave = sin(2._wp*pi*lag_params%pinf_frequency*t_pulse)
+                if (lag_params%pinf_pulse == 1) pinf_analytic = pinf_analytic + lag_params%pinf_mag*sine_wave
+                if (lag_params%pinf_pulse == 3) pinf_analytic = pinf_analytic + lag_params%pinf_mag*sign(1._wp, sine_wave)
+            end if
+        end if
+
         ! Radial motion model
         adap_dt_stop_max = 0
         $:GPU_PARALLEL_LOOP(private='[k, i, myalpha_rho, myalpha, Re, cell, myVapFlux, preterm1, term2, paux, pint, Romega, &
                             & term1_fac, myR_m, mygamma_m, myPb, myMass_n, myMass_v, myR, myV, myBeta_c, myBeta_t, myR0, myPbdot, &
                             & myMvdot, myPinf, aux1, aux2, myCson, myRho, gamma, pi_inf, qv, dmalf, dmntait, dmBtait, &
                             & dm_bub_adv_src, dm_divu, adap_dt_stop]', reduction='[[adap_dt_stop_max]]',reductionOp='[MAX]', &
-                            & copy = '[adap_dt_stop_max]', copyin = '[stage]')
+                            & copy = '[adap_dt_stop_max]', copyin = '[stage, pinf_analytic]')
         do k = 1, nBubs
             ! Keller-Miksis model
 
@@ -556,6 +571,7 @@ contains
 
             ! Obtaining driving pressure
             call s_get_pinf(k, q_prim_vf, 1, myPinf, cell, aux1, aux2)
+            if (lag_params%pinf_pulse > 0) myPinf = pinf_analytic
 
             ! Obtain liquid density and computing speed of sound from pinf
             call s_compute_species_fraction(q_prim_vf, cell(1), cell(2), cell(3), myalpha_rho, myalpha)

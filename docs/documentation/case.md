@@ -946,6 +946,9 @@ When ``polytropic = 'F'``, the gas compression is modeled as non-polytropic due 
 | `valmaxvoid`          | Real    | Maximum void fraction permitted                           |
 | `kernel_blending`     | Logical | Blend the smoothing kernel with a flat kernel             |
 | `kernel_void_cap`     | Real    | Peak per-bubble void fraction targeted by `kernel_blending` |
+| `pinf_pulse`          | Integer | Analytic driving pressure: 1 sine, 2 Gaussian, 3 square   |
+| `pinf_mean`, `pinf_mag` | Real  | Mean and pulse magnitude of the analytic driving pressure |
+| `pinf_frequency`, `pinf_npulse`, `pinf_gauss_sigma_time`, `pinf_delay` | Real | Pulse shape, as for `acoustic(i)%` |
 
 - `nBubs_glb` Total number of bubbles. Their initial conditions need to be specified in the ./input/lag_bubbles.dat file. See the example cases for additional information.
 
@@ -958,6 +961,8 @@ When ``polytropic = 'F'``, the gas compression is modeled as non-polytropic due 
 - `massTransfer_model` Activates the mass transfer model at the bubble's interface based on (\cite Preston07).
 
 - `kernel_blending` Replaces each bubble's kernel \f$K\f$ with \f$(1-w)K + w/V_s\f$, a blend with a flat kernel over the stencil volume \f$V_s\f$. The weight \f$w\f$ is the smallest value that keeps that bubble's peak void fraction at or below `kernel_void_cap`, and the stencil is widened if needed so the flat part alone fits under the cap. The blend conserves bubble volume when `weight_normalization` is true. The cap applies per bubble; overlapping bubbles can still sum past it, and `valmaxvoid` remains the hard limit.
+
+- `pinf_pulse` Replaces the driving pressure p_inf of every bubble with the analytic function \f$p_\infty(t) = \f$ `pinf_mean` \f$+\f$ `pinf_mag` \f$\cdot f(t - \f$`pinf_delay`\f$)\f$, where \f$f\f$ is a sine (1), Gaussian (2), or square (3) pulse defined as for `acoustic(i)%%pulse`. Sine and square pulses are zero before `pinf_delay` and after `pinf_npulse` cycles. The flow field and the bubble-to-flow coupling are unchanged, `cluster_type` no longer affects p_inf, and `pressure_corrector` cannot be used. The bubble's initial pressure still equilibrates with the local flow pressure, so set `pinf_mean` equal to it to start from rest.
 
 ### 10. Velocity Field Setup {#sec-velocity-field-setup}
 

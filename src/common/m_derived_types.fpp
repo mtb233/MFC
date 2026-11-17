@@ -524,6 +524,14 @@ module m_derived_types
         real(wp) :: epsilonb             !< Standard deviation scaling for the gaussian function
         real(wp) :: charwidth            !< Domain virtual depth (z direction, for 2D simulations)
         real(wp) :: valmaxvoid           !< Maximum void fraction permitted
+        integer  :: pinf_pulse           !< Analytic driving pressure pulse: 1 sine, 2 Gaussian, 3 square
+        real(wp) :: pinf_mean            !< Mean of the analytic driving pressure
+        real(wp) :: pinf_mag             !< Pulse magnitude of the analytic driving pressure
+        real(wp) :: pinf_frequency       !< Pulse frequency
+        !> Gaussian pulse width in time
+        real(wp) :: pinf_gauss_sigma_time
+        real(wp) :: pinf_npulse  !< Number of pulse cycles
+        real(wp) :: pinf_delay   !< Time delay of the pulse
     end type bubbles_lagrange_parameters
 
     !> Max and min number of cells in a direction of each combination of x-,y-, and z-

@@ -1070,14 +1070,14 @@ def _load():
     # lag_params (Lagrangian bubbles)
     # Members present in bubbles_lagrange_parameters: solver_approach, cluster_type,
     # pressure_corrector, kernel_shape, kernel_deviation_mode, kernel_extent, heatTransfer_model, massTransfer_model,
-    # write_bubbles, write_bubbles_stats, nBubs_glb, epsilonb, charwidth, valmaxvoid.
+    # write_bubbles, write_bubbles_stats, nBubs_glb, epsilonb, charwidth, valmaxvoid, pinf_*.
     # T0/Thost/c0/rho0/x0 were removed from the Fortran type by upstream #1085/#1093
     # — they must NOT be registered (namelist read would crash).
     for a in ["heatTransfer_model", "massTransfer_model", "pressure_corrector", "write_bubbles", "write_bubbles_stats", "weight_normalization", "kernel_blending"]:
         _r(f"lag_params%{a}", LOG, {"bubbles"})
-    for a in ["solver_approach", "cluster_type", "kernel_shape", "kernel_deviation_mode", "kernel_extent", "nBubs_glb"]:
+    for a in ["solver_approach", "cluster_type", "kernel_shape", "kernel_deviation_mode", "kernel_extent", "nBubs_glb", "pinf_pulse"]:
         _r(f"lag_params%{a}", INT, {"bubbles"})
-    for a in ["epsilonb", "valmaxvoid", "charwidth", "kernel_void_cap"]:
+    for a in ["epsilonb", "valmaxvoid", "charwidth", "kernel_void_cap", "pinf_mean", "pinf_mag", "pinf_frequency", "pinf_gauss_sigma_time", "pinf_npulse", "pinf_delay"]:
         _r(f"lag_params%{a}", REAL, {"bubbles"})
 
     # chem_params
