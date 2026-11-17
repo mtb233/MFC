@@ -76,7 +76,7 @@ def load_case(case_dir):
     return data
 
 
-def axis_values(data, axis, scales):
+def axis_values(data, axis, scales, time_offset):
     prop = axis["property"]
     dim, name, symbol = PROPERTIES[prop]
     unit = axis.get("unit", next(iter(UNITS[dim])))
@@ -86,6 +86,8 @@ def axis_values(data, axis, scales):
         default_label = rf"${symbol}/{symbol}_0$"
     elif unit in UNITS[dim]:
         values = values / UNITS[dim][unit]
+        if prop == "currentTime":
+            values = values + time_offset
         default_label = name if dim == "dimensionless" else f"{name} ({UNIT_LABELS.get(unit, unit)})"
     else:
         sys.exit(f"unit '{unit}' is not valid for '{prop}' ({dim}); choose from {['normalized', *UNITS[dim]]}")
@@ -117,8 +119,9 @@ def main():
             if case_dir not in cache:
                 cache[case_dir] = load_case(case_dir)
             data = cache[case_dir]
-            x, xlabel = axis_values(data, x_axis, scales)
-            y, ylabel = axis_values(data, plot["y"], scales)
+            offset = curve.get("time_offset", 0.0)
+            x, xlabel = axis_values(data, x_axis, scales, offset)
+            y, ylabel = axis_values(data, plot["y"], scales, offset)
             ax.plot(x, y, label=curve.get("label", case_dir.name), **curve.get("style", {}))
 
         ax.set_xlabel(xlabel)

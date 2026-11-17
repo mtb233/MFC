@@ -60,6 +60,7 @@
       "properties": {
         "case": {"type": "string", "description": "Case directory (containing D/), relative to the working directory (MFC root)."},
         "label": {"type": "string", "description": "Legend label; defaults to the case directory name."},
+        "time_offset": {"type": "number", "default": 0, "description": "Added to this curve's currentTime, in the axis's display time unit (ignored when that axis is normalized)."},
         "style": {"type": "object", "description": "Keyword arguments passed to matplotlib's Axes.plot."}
       }
     },

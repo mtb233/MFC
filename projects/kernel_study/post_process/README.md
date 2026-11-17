@@ -128,6 +128,7 @@ Generated labels look like `Radius (μm)` or, for normalized axes, `$R/R_0$`.
 |---|---|---|---|
 | `case` | yes | — | case directory (the one that contains `D/`) |
 | `label` | no | case directory name | legend entry |
+| `time_offset` | no | `0` | shift added to this curve's `currentTime`, in that axis's display unit (e.g. μs for `"unit": "us"`); use it to line up curves whose events happen at different times. Ignored when the time axis is `"normalized"` |
 | `style` | no | `{}` | keyword arguments passed to matplotlib's `Axes.plot` (`color`, `linestyle`, `linewidth`, `marker`, ...) |
 
 ## Example
@@ -147,7 +148,7 @@ kPa. Below is a config that compares kernels on the same grid:
         {"case": "projects/kernel_study/cases/df_large", "label": "Default"},
         {"case": "projects/kernel_study/cases/mc_large", "label": "MC"},
         {"case": "projects/kernel_study/cases/k1_large", "label": "K1", "style": {"linestyle": "--"}},
-        {"case": "projects/kernel_study/cases/k2_large", "label": "K2", "style": {"linestyle": ":"}}
+        {"case": "projects/kernel_study/cases/k2_large", "label": "K2", "style": {"linestyle": ":"}, "time_offset": -0.5}
       ]
     },
     {
