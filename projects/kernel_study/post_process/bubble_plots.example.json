@@ -1,0 +1,24 @@
+{
+  "output_dir": "projects/kernel_study/results",
+  "format": "png",
+  "dpi": 300,
+  "plots": [
+    {
+      "name": "radius_normalized",
+      "x": {"property": "currentTime", "unit": "us"},
+      "y": {"property": "radius", "unit": "normalized"},
+      "ylim": [0.5, 2.0],
+      "curves": [
+        {"case": "projects/kernel_study/cases/mc_large", "label": "MC large", "style": {"color": "C0"}}
+      ]
+    },
+    {
+      "name": "core_pressure",
+      "title": "Bubble core pressure",
+      "y": {"property": "corePressure", "unit": "kPa"},
+      "curves": [
+        {"case": "projects/kernel_study/cases/mc_large", "label": "MC large"}
+      ]
+    }
+  ]
+}

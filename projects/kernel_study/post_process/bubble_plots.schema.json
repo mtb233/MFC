@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bubble evolution plot configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["plots"],
+  "properties": {
+    "reference": {
+      "description": "Reference scales used for non-dimensionalization (SI). Defaults match generate_cases.py.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "x_0": {"type": "number", "exclusiveMinimum": 0, "description": "Length scale [m]"},
+        "rho_0": {"type": "number", "exclusiveMinimum": 0, "description": "Density scale [kg/m^3]"},
+        "c_0": {"type": "number", "exclusiveMinimum": 0, "description": "Velocity scale [m/s]"}
+      }
+    },
+    "output_dir": {"type": "string", "description": "Output directory, relative to the working directory (MFC root).", "default": "projects/kernel_study/results"},
+    "format": {"type": "string", "enum": ["png", "pdf", "svg", "eps"], "default": "png"},
+    "dpi": {"type": "integer", "minimum": 1, "default": 300},
+    "plots": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/plot"}
+    }
+  },
+  "$defs": {
+    "property": {
+      "type": "string",
+      "enum": [
+        "currentTime", "x", "y", "z", "coreVaporMass", "coreVaporConcentration",
+        "radius", "interfaceVelocity", "corePressure"
+      ]
+    },
+    "axis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["property"],
+      "properties": {
+        "property": {"$ref": "#/$defs/property"},
+        "unit": {
+          "description": "Display unit (must match the property's dimension) or 'normalized' to divide by the initial value.",
+          "type": "string",
+          "enum": ["normalized", "-", "s", "ms", "us", "ns", "m", "mm", "um", "m/s", "Pa", "kPa", "MPa", "atm", "kg", "ng", "pg"]
+        },
+        "label": {"type": "string"},
+        "scale": {"type": "string", "enum": ["linear", "log"], "default": "linear"}
+      }
+    },
+    "limits": {
+      "type": "array",
+      "prefixItems": [{"type": "number"}, {"type": "number"}],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "curve": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["case"],
+      "properties": {
+        "case": {"type": "string", "description": "Case directory (containing D/), relative to the working directory (MFC root)."},
+        "label": {"type": "string", "description": "Legend label; defaults to the case directory name."},
+        "style": {"type": "object", "description": "Keyword arguments passed to matplotlib's Axes.plot."}
+      }
+    },
+    "plot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "y", "curves"],
+      "properties": {
+        "name": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+$", "description": "Output filename stem."},
+        "title": {"type": "string"},
+        "figsize": {
+          "type": "array",
+          "prefixItems": [{"type": "number", "exclusiveMinimum": 0}, {"type": "number", "exclusiveMinimum": 0}],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "x": {"$ref": "#/$defs/axis", "description": "Defaults to currentTime in us."},
+        "y": {"$ref": "#/$defs/axis"},
+        "xlim": {"$ref": "#/$defs/limits"},
+        "ylim": {"$ref": "#/$defs/limits"},
+        "legend": {"type": "boolean", "default": true},
+        "curves": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/curve"}}
+      }
+    }
+  }
+}
